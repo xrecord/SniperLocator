@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 13/02/2015 20:58:10
+  * Date               : 15/02/2015 18:13:29
   * Description        : Main program body
   ******************************************************************************
   *
@@ -49,8 +49,12 @@ SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN 0 */
 #define DATA_SIZE       0x7FFF
-volatile unsigned short ADCConvValues[DATA_SIZE];
+uint16_t ADCConvValues[3];
 extern volatile uint16_t DataReceived;
+
+uint16_t value1 = 0;
+uint16_t value2 = 0;
+uint16_t value3 = 0;
 
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
@@ -75,6 +79,7 @@ static void MX_SPI1_Init(void);
 
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -171,7 +176,7 @@ void MX_ADC1_Init(void)
     /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
     */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV2;
+  hadc1.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV8;
   hadc1.Init.Resolution = ADC_RESOLUTION12b;
   hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
@@ -188,7 +193,7 @@ void MX_ADC1_Init(void)
     */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
   HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
@@ -374,12 +379,20 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_ADC_ConvCpltCallback could be implemented in the user file
    */
-    HAL_ADC_Stop_DMA(&hadc1);  
+    // HAL_ADC_Stop_DMA(&hadc1);  
+  value1 = ADCConvValues[0];
+  value2 = ADCConvValues[1];
+  value3 = ADCConvValues[2];
+  
+  CDC_Transmit_FS(ADCConvValues,3 * sizeof(uint16_t));
 }
+char string[12] = "Flyability\r\n";
+
+volatile short startConversion = 0;
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  CDC_Transmit_FS("string",7);
+  startConversion = 1;
 }
 
 /* USER CODE END 4 */
@@ -392,28 +405,26 @@ static void StartThread(void const * argument) {
   /* USER CODE BEGIN 5 */
   //HAL_DMA_Start_IT(&hdma_adc1,(uint32_t)&ADC1->DR,(uint32_t)ADCConvValues, DATA_SIZE); 
   
-  osDelay(1000);
-  
   /* Infinite loop */
   for(;;)
   {
     // DataReceived = 100;
-      if (DataReceived)
+      if (startConversion)
       {
-          
-          if(HAL_ADC_Start_DMA(&hadc1, (uint32_t*)ADCConvValues, DataReceived) != HAL_OK)
-          {}
-          
-          for (unsigned short i = 0; i < (DataReceived * 2) / 32; i++)
-          {
-              while (CDC_Transmit_FS(((unsigned char *)ADCConvValues + i*32),32) == USBD_BUSY)
-              {
-                  __no_operation();
-              };
+          osDelay(1000);
+          if(HAL_ADC_Start_DMA(&hadc1, (uint32_t*)ADCConvValues, 3) == HAL_OK) {  
           }
-          DataReceived = 0;
+          
+          //for (unsigned short i = 0; i < (DataReceived * 2) / 32; i++)
+          //{
+          //    while (CDC_Transmit_FS(((unsigned char *)ADCConvValues + i*32),32) == USBD_BUSY)
+          //    {
+          //        __no_operation();
+          //    };
+          //}
+          //DataReceived = 0;
+          startConversion = 0;
       }
-      //osDelay(1000);
       //CDC_Transmit_FS(c,4);   
   }
   /* USER CODE END 5 */ 

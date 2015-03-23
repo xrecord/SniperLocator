@@ -1,17 +1,19 @@
 #MicroXplorer Configuration settings - do not modify
-#Fri Feb 13 20:58:06 EET 2015
+#Sun Feb 15 18:13:23 EET 2015
 ADC1.Channel-0\#ChannelRegularConversion=ADC_CHANNEL_1
-ADC1.Channel-1\#ChannelRegularConversion=ADC_CHANNEL_2
-ADC1.Channel-3\#ChannelRegularConversion=ADC_CHANNEL_3
+ADC1.Channel-6\#ChannelRegularConversion=ADC_CHANNEL_2
+ADC1.Channel-7\#ChannelRegularConversion=ADC_CHANNEL_3
+ADC1.ClockPrescaler=ADC_CLOCKPRESCALER_PCLK_DIV8
 ADC1.ContinuousConvMode=ENABLE
 ADC1.DMAContinuousRequests=ENABLE
-ADC1.IPParameters=NbrOfConversionFlag,SamplingTime-1\#ChannelRegularConversion,Channel-0\#ChannelRegularConversion,Rank-1\#ChannelRegularConversion,Channel-1\#ChannelRegularConversion,NbrOfConversion,master,ContinuousConvMode,SamplingTime-3\#ChannelRegularConversion,ScanConvMode,Rank-3\#ChannelRegularConversion,DMAContinuousRequests,Channel-3\#ChannelRegularConversion
+ADC1.IPParameters=SamplingTime-6\#ChannelRegularConversion,NbrOfConversionFlag,Channel-0\#ChannelRegularConversion,ClockPrescaler,SamplingTime-7\#ChannelRegularConversion,Channel-6\#ChannelRegularConversion,NbrOfConversion,master,ContinuousConvMode,ScanConvMode,Rank-6\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,DMAContinuousRequests,Rank-7\#ChannelRegularConversion,Channel-7\#ChannelRegularConversion
 ADC1.NbrOfConversion=3
 ADC1.NbrOfConversionFlag=1
-ADC1.Rank-1\#ChannelRegularConversion=2
-ADC1.Rank-3\#ChannelRegularConversion=3
-ADC1.SamplingTime-1\#ChannelRegularConversion=ADC_SAMPLETIME_3CYCLES
-ADC1.SamplingTime-3\#ChannelRegularConversion=ADC_SAMPLETIME_3CYCLES
+ADC1.Rank-6\#ChannelRegularConversion=2
+ADC1.Rank-7\#ChannelRegularConversion=3
+ADC1.SamplingTime-0\#ChannelRegularConversion=ADC_SAMPLETIME_56CYCLES
+ADC1.SamplingTime-6\#ChannelRegularConversion=ADC_SAMPLETIME_56CYCLES
+ADC1.SamplingTime-7\#ChannelRegularConversion=ADC_SAMPLETIME_56CYCLES
 ADC1.ScanConvMode=ENABLE
 ADC1.master=1
 Dma.ADC1.0.Channel=DMA_CHANNEL_0
@@ -20,7 +22,7 @@ Dma.ADC1.0.FIFOMode=DMA_FIFOMODE_DISABLE
 Dma.ADC1.0.Instance=DMA2_Stream0
 Dma.ADC1.0.MemDataAlignment=DMA_MDATAALIGN_HALFWORD
 Dma.ADC1.0.MemInc=DMA_MINC_ENABLE
-Dma.ADC1.0.Mode=DMA_NORMAL
+Dma.ADC1.0.Mode=DMA_CIRCULAR
 Dma.ADC1.0.PeriphDataAlignment=DMA_PDATAALIGN_HALFWORD
 Dma.ADC1.0.PeriphInc=DMA_PINC_DISABLE
 Dma.ADC1.0.Priority=DMA_PRIORITY_HIGH
