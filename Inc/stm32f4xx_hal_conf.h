@@ -63,13 +63,13 @@
 //#define HAL_SDRAM_MODULE_ENABLED   
 //#define HAL_HASH_MODULE_ENABLED   
 #define HAL_I2C_MODULE_ENABLED
-#define HAL_I2S_MODULE_ENABLED
+//#define HAL_I2S_MODULE_ENABLED   
 //#define HAL_IWDG_MODULE_ENABLED   
 //#define HAL_LTDC_MODULE_ENABLED   
 //#define HAL_RNG_MODULE_ENABLED   
 //#define HAL_RTC_MODULE_ENABLED   
 //#define HAL_SAI_MODULE_ENABLED   
-//#define HAL_SD_MODULE_ENABLED   
+#define HAL_SD_MODULE_ENABLED
 #define HAL_SPI_MODULE_ENABLED
 //#define HAL_TIM_MODULE_ENABLED   
 //#define HAL_UART_MODULE_ENABLED   
@@ -113,7 +113,7 @@
   * @brief Internal Low Speed oscillator (LSI) value.
   */
 #if !defined  (LSI_VALUE) 
- #define LSI_VALUE  ((uint32_t)40000)    
+ #define LSI_VALUE  ((uint32_t)32000)    
 #endif /* LSI_VALUE */                      /*!< Value of the Internal Low Speed oscillator in Hz
                                              The real value may vary depending on the variations
                                              in voltage and temperature.  */
@@ -142,7 +142,7 @@
   */     
   
 #define  VDD_VALUE					  ((uint32_t)3300) /*!< Value of VDD in mv */           
-#define  TICK_INT_PRIORITY            ((uint32_t)0)    /*!< tick interrupt priority */            
+#define  TICK_INT_PRIORITY            ((uint32_t)0)   /*!< tick interrupt priority */            
 #define  USE_RTOS                     0     
 #define  PREFETCH_ENABLE              1
 #define  INSTRUCTION_CACHE_ENABLE     1

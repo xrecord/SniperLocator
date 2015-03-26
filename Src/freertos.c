@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
   * File Name          : freertos.c
-  * Date               : 15/02/2015 18:13:25
-  * Description        : Optional code that may be needed for compiling freertos applications
+  * Date               : 27/03/2015 00:00:55
+  * Description        : Code for freertos applications
   ******************************************************************************
   *
   * COPYRIGHT(c) 2015 STMicroelectronics
@@ -35,8 +35,26 @@
 /* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
 #include "task.h"
-/* USER CODE BEGIN 0 */
 
-/* USER CODE END 0 */
+/* USER CODE BEGIN Includes */     
+
+/* USER CODE END Includes */
+
+/* Variables -----------------------------------------------------------------*/
+
+/* USER CODE BEGIN Variables */
+
+/* USER CODE END Variables */
+
+/* Function prototypes -------------------------------------------------------*/
+
+/* USER CODE BEGIN FunctionPrototypes */
+
+/* USER CODE END FunctionPrototypes */
+/* Hook prototypes */
+
+/* USER CODE BEGIN Application */
+     
+/* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
