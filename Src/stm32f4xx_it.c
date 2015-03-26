@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    stm32f4xx_it.c
-  * @date    15/02/2015 18:13:27
+  * @date    27/03/2015 00:34:06
   * @brief   Interrupt Service Routines.
   ******************************************************************************
   *
@@ -35,7 +35,10 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx.h"
 #include "stm32f4xx_it.h"
+#include "cmsis_os.h"
+/* USER CODE BEGIN 0 */
 
+/* USER CODE END 0 */
 /* External variables --------------------------------------------------------*/
  
 extern void xPortSysTickHandler(void);
@@ -52,8 +55,13 @@ extern DMA_HandleTypeDef hdma_adc1;
 */
 void DMA2_Stream0_IRQHandler(void)
 {
-  HAL_NVIC_ClearPendingIRQ(DMA2_Stream0_IRQn);
+  /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
+
+  /* USER CODE END DMA2_Stream0_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_adc1);
+  /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream0_IRQn 1 */
 }
 
 /**
@@ -61,9 +69,13 @@ void DMA2_Stream0_IRQHandler(void)
 */
 void EXTI0_IRQHandler(void)
 {
-  HAL_NVIC_ClearPendingIRQ(EXTI0_IRQn);
-  
+  /* USER CODE BEGIN EXTI0_IRQn 0 */
+
+  /* USER CODE END EXTI0_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+  /* USER CODE BEGIN EXTI0_IRQn 1 */
+
+  /* USER CODE END EXTI0_IRQn 1 */
 }
 
 /**
@@ -71,8 +83,16 @@ void EXTI0_IRQHandler(void)
 */
 void SysTick_Handler(void)
 {
-  xPortSysTickHandler();
+  /* USER CODE BEGIN SysTick_IRQn 0 */
+
+  /* USER CODE END SysTick_IRQn 0 */
+  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+    xPortSysTickHandler();
+  }
   HAL_IncTick();
+  /* USER CODE BEGIN SysTick_IRQn 1 */
+
+  /* USER CODE END SysTick_IRQn 1 */
 }
 
 /**
@@ -80,8 +100,16 @@ void SysTick_Handler(void)
 */
 void OTG_FS_IRQHandler(void)
 {
-  HAL_NVIC_ClearPendingIRQ(OTG_FS_IRQn);
+  /* USER CODE BEGIN OTG_FS_IRQn 0 */
+
+  /* USER CODE END OTG_FS_IRQn 0 */
   HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+  /* USER CODE BEGIN OTG_FS_IRQn 1 */
+
+  /* USER CODE END OTG_FS_IRQn 1 */
 }
 
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

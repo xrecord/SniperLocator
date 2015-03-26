@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 15/02/2015 18:13:29
+  * Date               : 27/03/2015 00:34:07
   * Description        : Main program body
   ******************************************************************************
   *
@@ -37,15 +37,40 @@
 #include "cmsis_os.h"
 #include "usb_device.h"
 
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
 I2C_HandleTypeDef hi2c1;
 
-I2S_HandleTypeDef hi2s3;
+SD_HandleTypeDef hsd;
+HAL_SD_CardInfoTypedef SDCardInfo;
 
 SPI_HandleTypeDef hspi1;
+
+osThreadId defaultTaskHandle;
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
+static void MX_ADC1_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_SDIO_SD_Init(void);
+static void MX_SPI1_Init(void);
+void StartDefaultTask(void const * argument);
+
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
 #define DATA_SIZE       0x7FFF
@@ -61,21 +86,11 @@ DMA_HandleTypeDef hdma_adc1;
 
 I2C_HandleTypeDef hi2c1;
 
-I2S_HandleTypeDef hi2s3;
+//I2S_HandleTypeDef hi2s3; вы€снить зачем это нужно
 
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE END 0 */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void StartThread(void const * argument);
-static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
-static void MX_ADC1_Init(void);
-static void MX_I2C1_Init(void);
-static void MX_I2S3_Init(void);
-static void MX_SPI1_Init(void);
 
 int main(void)
 {
@@ -92,32 +107,49 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-  /* System interrupt init*/
-  /* Sets the priority grouping field */
-  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
-  MX_I2S3_Init();
+  MX_SDIO_SD_Init();
   MX_SPI1_Init();
 
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
-  /* Code generated for FreeRTOS */
-  /* Create Start thread */
-  osThreadDef(USER_Thread, StartThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
-  osThreadCreate (osThread(USER_Thread), NULL);
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* Create the thread(s) */
+  /* definition and creation of defaultTask */
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+ 
 
   /* Start scheduler */
-  osKernelStart(NULL, NULL);
-
+  osKernelStart();
+  
   /* We should never get here as control is now taken by the scheduler */
+  
 
   /* USER CODE BEGIN 3 */
   /* Infinite loop */
@@ -134,9 +166,8 @@ int main(void)
 void SystemClock_Config(void)
 {
 
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
   RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
   __PWR_CLK_ENABLE();
 
@@ -160,11 +191,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
 
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S;
-  PeriphClkInitStruct.PLLI2S.PLLI2SN = 192;
-  PeriphClkInitStruct.PLLI2S.PLLI2SR = 2;
-  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
-
 }
 
 /* ADC1 init function */
@@ -181,7 +207,6 @@ void MX_ADC1_Init(void)
   hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.NbrOfDiscConversion = 1;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 3;
@@ -191,15 +216,15 @@ void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_1;
-  sConfig.Rank = 1;
+  sConfig.Channel = ADC_CHANNEL_2;
+  sConfig.Rank = 2;
   sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
   HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_2;
-  sConfig.Rank = 2;
+  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Rank = 1;
   HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
@@ -227,20 +252,20 @@ void MX_I2C1_Init(void)
 
 }
 
-/* I2S3 init function */
-void MX_I2S3_Init(void)
+/* SDIO init function */
+void MX_SDIO_SD_Init(void)
 {
 
-  hi2s3.Instance = SPI3;
-  hi2s3.Init.Mode = I2S_MODE_MASTER_TX;
-  hi2s3.Init.Standard = I2S_STANDARD_PHILLIPS;
-  hi2s3.Init.DataFormat = I2S_DATAFORMAT_16B;
-  hi2s3.Init.MCLKOutput = I2S_MCLKOUTPUT_ENABLE;
-  hi2s3.Init.AudioFreq = I2S_AUDIOFREQ_96K;
-  hi2s3.Init.CPOL = I2S_CPOL_LOW;
-  hi2s3.Init.ClockSource = I2S_CLOCK_PLL;
-  hi2s3.Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
-  HAL_I2S_Init(&hi2s3);
+  hsd.Instance = SDIO;
+  hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
+  hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
+  hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
+  hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
+  hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
+  hsd.Init.ClockDiv = 0;
+  HAL_SD_Init(&hsd, &SDCardInfo);
+
+  HAL_SD_WideBusOperation_Config(&hsd, SDIO_BUS_WIDE_4B);
 
 }
 
@@ -272,9 +297,7 @@ void MX_DMA_Init(void)
   __DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* Sets the priority grouping field */
-  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 
 }
@@ -286,7 +309,9 @@ void MX_DMA_Init(void)
         * EVENT_OUT
         * EXTI
      PC3   ------> I2S2_SD
+     PA4   ------> I2S3_WS
      PB10   ------> I2S2_CK
+     PC7   ------> I2S3_MCK
 */
 void MX_GPIO_Init(void)
 {
@@ -308,8 +333,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PC0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  /*Configure GPIO pins : PC0 PC4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
@@ -327,6 +352,14 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = GPIO_PIN_0;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB2 */
@@ -352,6 +385,14 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PC7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
   /*Configure GPIO pin : PD5 */
   GPIO_InitStruct.Pin = GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -365,9 +406,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  /* Sets the priority grouping field */
-  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
 }
@@ -380,10 +419,12 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
             the HAL_ADC_ConvCpltCallback could be implemented in the user file
    */
     // HAL_ADC_Stop_DMA(&hadc1);  
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_SET);
   value1 = ADCConvValues[0];
   value2 = ADCConvValues[1];
   value3 = ADCConvValues[2];
-  
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET);  value1 = ADCConvValues[0];
+   
   CDC_Transmit_FS(ADCConvValues,3 * sizeof(uint16_t));
 }
 char string[12] = "Flyability\r\n";
@@ -397,8 +438,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 /* USER CODE END 4 */
 
-static void StartThread(void const * argument) {
-
+void StartDefaultTask(void const * argument)
+{
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
 
@@ -430,6 +471,7 @@ static void StartThread(void const * argument) {
   /* USER CODE END 5 */ 
 
 }
+ 
  
 
 #ifdef USE_FULL_ASSERT
