@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * File Name          : main.c
-  * Date               : 27/03/2015 00:34:07
+  * Date               : 27/03/2015 00:00:56
   * Description        : Main program body
   ******************************************************************************
   *
@@ -86,7 +86,7 @@ DMA_HandleTypeDef hdma_adc1;
 
 I2C_HandleTypeDef hi2c1;
 
-//I2S_HandleTypeDef hi2s3; вы€снить зачем это нужно
+I2S_HandleTypeDef hi2s3;
 
 SPI_HandleTypeDef hspi1;
 
